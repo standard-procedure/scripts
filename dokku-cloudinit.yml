@@ -1,0 +1,48 @@
+#cloud-config
+users:
+  - name: app
+    groups: users, admin, docker
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA86OHFiDGeS7U2EMlk31Irfy0CDiZf2KrF58VplpbhUCHOw/+aRw1pCWquNzMK5SFJpcTdVEsMc7rW4PzN1KsZex4Zao1BtNRUGnZysSGwf1Wa4j146KkyvVVwjZBxMxKY6xjAED8KA/WhCp6bobE0nz6xJNXCpeOMKOmvo3nDuxuAn9NVSEANSaD1wVx6U8lkC7iaSEbJLKqm2GfBeEP1UqMBj9V27TbiD47nMijoINsmM4qQqEUHHyjCA3GlUm3whcbXyf4VBiDOiF+2CB99LMnoRmU1WtEdxH7MwGOHlQx+ZRhx4kXRlUD/OwqVen04BsXVdCEWQ5MTV/4zTJr4Q== rahoulb@monster.local
+packages:
+  - fail2ban
+  - ufw
+  - wget
+package_update: true
+package_upgrade: true
+runcmd:
+  # General server setup
+  - timedatectl set-timezone Europe/London
+  # Fail2Ban setup
+  - printf "[sshd]\nenabled = true\nbanaction = iptables-multiport" > /etc/fail2ban/jail.local
+  - systemctl enable fail2ban
+  # UFW and SSH setup
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw enable
+  - sed -i -e '/^\(#\|\)PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)X11Forwarding/s/^.*$/X11Forwarding no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)MaxAuthTries/s/^.*$/MaxAuthTries 2/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)AllowTcpForwarding/s/^.*$/AllowTcpForwarding no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)AllowAgentForwarding/s/^.*$/AllowAgentForwarding no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)AuthorizedKeysFile/s/^.*$/AuthorizedKeysFile .ssh\/authorized_keys/' /etc/ssh/sshd_config
+  - sed -i '$a AllowUsers app' /etc/ssh/sshd_config
+  # Dokku setup
+  - echo "dokku dokku/vhost_enable boolean true" | sudo debconf-set-selections
+  - wget https://dokku.com/install/v0.29.4/bootstrap.sh && sudo DOKKU_TAG=v0.29.4 bash bootstrap.sh
+  - cat /home/app/.ssh/authorized_keys | dokku ssh-keys:add admin
+  - dokku domains:set-global $HOSTNAME
+  - dokku plugin:install https://github.com/dokku/dokku-maintenance.git maintenance
+  - dokku plugin:install https://github.com/dokku/dokku-redis.git redis
+  - dokku plugin:install https://github.com/dokku/dokku-mariadb.git mariadb
+  - dokku plugin:install https://github.com/dokku/dokku-memcached.git memcached
+  - dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git letsencrypt
+  - dokku config:set --global DOKKU_LETSENCRYPT_EMAIL=sysadmin@echodek.co
+  - dokku git:set --global deploy-branch main
+  - dokku mariadb:create sql_db -r root -C "collation_server=utf8_unicode_ci
+character_set_server=utf8mb4"
+  - reboot

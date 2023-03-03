@@ -4,57 +4,57 @@ if [ ! $1 ] || [ ! $2 ]; then
   exit 1
 fi
 
-# echo "--- Setting up server"
-# ssh $1@$2 <<'SUDOSCRIPT'
-# echo "Installing"
-# sudo apt-get update
-# sudo apt-get-y upgrade
-# sudo apt-get install -y ufw wget mosh git zsh apt-transport-https ca-certificates curl gnupg lsb-release software-properties-common make build-essential zlib1g-dev autoconf bison libffi-dev libc-dev libyaml-dev libgdbm-dev libssl-dev libncurses-dev libffi-dev libsqlite3-dev libreadline-dev libbz2-dev ack tmux ruby vim universal-ctags
-#
-# echo "--- General server setup"
-# sudo timedatectl set-timezone Europe/London
-#
-# echo "--- UFW and SSH setup"
-# sudo ufw allow 22/tcp
-# sudo ufw allow 3000:3010/tcp
-# sudo ufw allow 60000:61000/tcp
-# sudo ufw --force enable
-# sudo sed -i -e '/^\(#\|\)PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
-# sudo sed -i -e '/^\(#\|\)PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
-# sudo sed -i -e '/^\(#\|\)X11Forwarding/s/^.*$/X11Forwarding no/' /etc/ssh/sshd_config
-# sudo sed -i -e '/^\(#\|\)MaxAuthTries/s/^.*$/MaxAuthTries 2/' /etc/ssh/sshd_config
-# sudo sed -i -e '/^\(#\|\)AllowTcpForwarding/s/^.*$/AllowTcpForwarding no/' /etc/ssh/sshd_config
-# sudo sed -i -e '/^\(#\|\)AllowAgentForwarding/s/^.*$/AllowAgentForwarding yes/' /etc/ssh/sshd_config
-# sudo sed -i -e '/^\(#\|\)AuthorizedKeysFile/s/^.*$/AuthorizedKeysFile .ssh\/authorized_keys/' /etc/ssh/sshd_config
-# sudo service sshd restart
-#
-# echo "--- Install Docker"
-# sudo mkdir -m 0755 -p /etc/apt/keyrings
-# sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --batch --dearmor -o /etc/apt/keyrings/docker.gpg
-# sudo echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-# sudo apt-get -y update
-# sudo apt-cache policy docker-ce
-# sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-#
-# echo "--- Install github"
-# curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-# echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-# sudo apt-get update -y
-# sudo apt-get install -y gh
-#
-# echo "--- Set up dev user"
-# sudo mkdir -p /etc/skel/.ssh
-# sudo cp ~/.ssh/authorized_keys /etc/skel/.ssh
-# sudo adduser --disabled-password --gecos "" dev
-# sudo usermod -aG sudo dev
-# sudo usermod -aG docker dev
-# sudo echo "dev ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-# sudo chsh -s /usr/bin/zsh dev
-# sudo mkdir -p /home/dev/.ssh
-# sudo cp ~/.ssh/authorized_keys /home/dev/.ssh
-# sudo chown dev /home/dev/.ssh
-# sudo chown dev /home/dev/.ssh/*
-# SUDOSCRIPT
+echo "--- Setting up server"
+ssh $1@$2 <<'SUDOSCRIPT'
+echo "Installing"
+sudo apt-get update
+sudo apt-get-y upgrade
+sudo apt-get install -y ufw wget mosh git zsh apt-transport-https ca-certificates curl gnupg lsb-release software-properties-common make build-essential zlib1g-dev autoconf bison libffi-dev libc-dev libyaml-dev libgdbm-dev libssl-dev libncurses-dev libffi-dev libsqlite3-dev libreadline-dev libbz2-dev ack tmux ruby vim universal-ctags
+
+echo "--- General server setup"
+sudo timedatectl set-timezone Europe/London
+
+echo "--- UFW and SSH setup"
+sudo ufw allow 22/tcp
+sudo ufw allow 3000:3010/tcp
+sudo ufw allow 60000:61000/udp
+sudo ufw --force enable
+sudo sed -i -e '/^\(#\|\)PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
+sudo sed -i -e '/^\(#\|\)PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
+sudo sed -i -e '/^\(#\|\)X11Forwarding/s/^.*$/X11Forwarding no/' /etc/ssh/sshd_config
+sudo sed -i -e '/^\(#\|\)MaxAuthTries/s/^.*$/MaxAuthTries 2/' /etc/ssh/sshd_config
+sudo sed -i -e '/^\(#\|\)AllowTcpForwarding/s/^.*$/AllowTcpForwarding no/' /etc/ssh/sshd_config
+sudo sed -i -e '/^\(#\|\)AllowAgentForwarding/s/^.*$/AllowAgentForwarding yes/' /etc/ssh/sshd_config
+sudo sed -i -e '/^\(#\|\)AuthorizedKeysFile/s/^.*$/AuthorizedKeysFile .ssh\/authorized_keys/' /etc/ssh/sshd_config
+sudo service sshd restart
+
+echo "--- Install Docker"
+sudo mkdir -m 0755 -p /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --batch --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get -y update
+sudo apt-cache policy docker-ce
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+echo "--- Install github"
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+sudo apt-get update -y
+sudo apt-get install -y gh
+
+echo "--- Set up dev user"
+sudo mkdir -p /etc/skel/.ssh
+sudo cp ~/.ssh/authorized_keys /etc/skel/.ssh
+sudo adduser --disabled-password --gecos "" dev
+sudo usermod -aG sudo dev
+sudo usermod -aG docker dev
+sudo echo "dev ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+sudo chsh -s /usr/bin/zsh dev
+sudo mkdir -p /home/dev/.ssh
+sudo cp ~/.ssh/authorized_keys /home/dev/.ssh
+sudo chown dev /home/dev/.ssh
+sudo chown dev /home/dev/.ssh/*
+SUDOSCRIPT
 
 echo "- Installing for dev user"
 

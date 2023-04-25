@@ -9,7 +9,7 @@ ssh $1@$2 <<'SUDOSCRIPT'
 echo "Installing"
 sudo apt-get update
 sudo apt-get-y upgrade
-sudo apt-get install -y ufw wget mosh git zsh apt-transport-https ca-certificates curl gnupg lsb-release software-properties-common make build-essential zlib1g-dev autoconf bison libffi-dev libc-dev libyaml-dev libgdbm-dev libssl-dev libncurses-dev libffi-dev libsqlite3-dev libreadline-dev libbz2-dev ack tmux ruby vim universal-ctags
+sudo apt-get install -y ufw wget mosh git zsh apt-transport-https ca-certificates curl gnupg lsb-release software-properties-common make build-essential zlib1g-dev autoconf bison libffi-dev libc-dev libyaml-dev libgdbm-dev libssl-dev libncurses-dev libffi-dev libsqlite3-dev libreadline-dev libbz2-dev ack tmux ruby vim universal-ctags keychain
 
 echo "--- General server setup"
 export HOSTNAME=$2
@@ -21,6 +21,7 @@ sudo timedatectl set-timezone Europe/London
 echo "--- UFW and SSH setup"
 sudo ufw allow 22/tcp
 sudo ufw allow 3000:3010/tcp
+sudo ufw allow 2022/tcp
 sudo ufw allow 60000:61000/udp
 sudo ufw --force enable
 sudo sed -i -e '/^\(#\|\)PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
@@ -45,6 +46,12 @@ curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo 
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
 sudo apt-get update -y
 sudo apt-get install -y gh
+
+echo "--- Install Eternal Terminal"
+sudo apt-get install -y software-properties-common
+sudo add-apt-repository ppa:jgmath2000/et
+sudo apt-get update
+sudo apt-get install et
 
 echo "--- Set up dev user"
 sudo mkdir -p /etc/skel/.ssh
@@ -73,6 +80,8 @@ ln -nfs ~/bin/aws ~/.aws
 ln -nfs ~/bin/tmux.conf ~/.tmux.conf
 ln -nfs ~/bin/echodek.db002 ~/.echodek.db002
 ln -nfs ~/bin/echodek.db003 ~/.echodek.db003
+ln -nfs ~/bin/erb-lint.yml ~/.erb-lint.yml
+ln -nfs ~/bin/erb-lint_rubocop.yml ~/.erb-lint_rubocop.yml
 
 echo "--- Installing rbenv"
 curl -fsSL https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
@@ -80,4 +89,5 @@ DEVSCRIPT
 
 echo "--- Now run:"
 echo "rbenv install 3.1.2"
+echo "gem install erb_lint standardrb"
 ssh dev@$2
